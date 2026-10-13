@@ -218,3 +218,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- Práctica 2 ---
+# Dataset grande (>100 MB): cada quien lo descarga de Kaggle
+data/raw/creditcard.csv
+*.zip

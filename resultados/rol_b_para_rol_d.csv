@@ -1,0 +1,8 @@
+﻿dataset,columna,tratamiento,justificacion,nulos,%_nulos,asimetria,%_outliers_IQR,lim_inf_IQR,lim_sup_IQR,p1,p99
+titanic,Age,Imputar,Comparar media vs mediana (ajustadas solo con train) y agregar Age_missing: la ausencia es informativa. Opcional: KNN o mediana por título (Master ≈ 3.5 años).,177,19.865319865319865,0.38910778230082693,1.5406162464985995,-6.6875,64.8125,1.0,65.87
+titanic,Embarked,Imputar,Moda ('S') vs categoría 'Desconocido'. Solo 2 filas: impacto mínimo.,2,0.22446689113355783,,,,,,
+titanic,Cabin,No imputar el valor,"77 % de nulos: no hay base para inventar camarotes. Excluir (ya está en excluir) o usar solo Cabin_missing, documentando el riesgo de fuga parcial.",687,77.10437710437711,,,,,,
+titanic,Fare,Winsorizar,Asimetría alta y 13 % de outliers IQR. Comparar IQR vs p1–p99 con límites de train. Fare = 0 es válido (boletos de cortesía).,0,0.0,4.787316519674893,13.019079685746352,-26.724,65.6344,0.0,249.00622000000035
+titanic,Parch,No winsorizar con IQR,Conteo discreto con IQR = 0: la regla marcaría como outlier a todo el que viaja con padres o hijos.,0,0.0,2.7491170471010933,23.905723905723907,0.0,0.0,0.0,4.0
+fraud,Amount,Winsorizar,Asimetría ≈ 17. p1–p99 es razonable; IQR recorta al 11 % de las transacciones (lím. sup. ≈ 184.5). Alternativa: log1p.,0,0.0,16.977724453761006,11.201971861646658,-101.7475,184.5125,0.12,1017.9700000000012
+fraud,V14,No winsorizar (aplica a V1–V28),Los outliers son la señal de fraude: el 87 % de los fraudes son outliers IQR en V14. Recortarlos borra información.,0,0.0,-1.99517584026833,4.96792564789489,-1.803659804964707,1.8712356417278626,-2.799763319012843,2.1502995665046174

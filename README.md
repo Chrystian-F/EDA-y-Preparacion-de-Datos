@@ -76,6 +76,24 @@ X_train, X_test, y_train, y_test = dividir(df, "titanic")
 res = evaluar(pipeline_base(X_train), X_train, y_train, X_test, y_test, nombre="Línea base")
 ```
 
+## Orden de ejecución
+
+Ejecutar los notebooks de `notebooks/` en orden (`00` → `05`) con *Restart & Run All*.
+`05_final.ipynb` integra todo y genera `resultados/final_comparacion.csv`.
+
+## Resultados finales (test)
+
+| Dataset | Configuración | Precision | Recall | F1 | PR-AUC |
+|---|---|---|---|---|---|
+| Titanic | Línea base | 0.747 | 0.718 | 0.733 | 0.804 |
+| Titanic | Rol D (mediana por título + log Fare) | 0.784 | 0.777 | 0.780 | 0.848 |
+| Titanic | **Rol D + SMOTE** (recomendada) | 0.750 | 0.845 | **0.795** | 0.846 |
+| Fraud | Línea base | 0.850 | 0.615 | 0.714 | 0.708 |
+| Fraud | **Rol D (winsorización P1–P99)** (recomendada) | 0.860 | 0.750 | **0.801** | **0.773** |
+| Fraud | Rol D + `class_weight='balanced'` (si se prioriza el recall) | 0.058 | 0.878 | 0.109 | 0.750 |
+
+Detalle y justificación en `notebooks/05_final.ipynb`.
+
 ## Uso de IA generativa
 
 Cada integrante declara aquí dónde utilizó herramientas de IA generativa:

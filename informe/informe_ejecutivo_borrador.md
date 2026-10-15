@@ -25,9 +25,43 @@ Por eso el accuracy no sirve para comparar modelos aquí; se usan precision, rec
 
 ## 2. Justificación de decisiones
 
-**Imputación** ✏️ *(Rol D: estrategia elegida, columnas, comparación media/moda vs mediana/"Desconocido" y por qué)*
+**Imputación (Rol D).** Solo Titanic tiene valores perdidos: `Cabin` 77 %, `Age` 20 % y `Embarked` 0.2 %; Fraud no tiene ninguno.
+`Age` falta mucho más en 3ª clase (28 %) que en 1ª (14 %) y 2ª (6 %), y quienes no tienen edad sobrevivieron menos (29 % vs 41 %):
+la ausencia **no es aleatoria (MAR)**. Se compararon 9 estrategias con el mismo modelo (F1 en test):
 
-**Outliers (winsorización)** ✏️ *(Rol D: variables, límites exactos con IQR y percentiles 1–99, efecto en estadísticas y métricas)*
+| Estrategia | F1 | ROC-AUC |
+|---|---|---|
+| Eliminar filas con `Age` nula (solo train) | 0.703 | 0.853 |
+| Mediana global (línea base) | 0.733 | 0.849 |
+| Media | 0.743 | 0.849 |
+| KNN (k=5) | 0.734 | 0.849 |
+| Iterativa (MICE) | 0.750 | 0.851 |
+| Mediana por `Pclass`×`Sex` + indicador de faltante | 0.746 | 0.850 |
+| Lo anterior + `tiene_cabina` | 0.755 | 0.847 |
+| **Mediana por título (`Mr`/`Mrs`/`Miss`/`Master`) + indicador** | **0.778** | **0.880** |
+
+Se eligió **mediana de `Age` por título del nombre + indicador `Age_faltante`** (sugerencia del Rol B) y `Embarked` con la moda;
+`Cabin` se excluye. El título distingue a los niños (`Master`) mejor que `Pclass`×`Sex`, conserva mejor la distribución de `Age`
+que la mediana global (que crea un pico artificial en 28 años) y da el mejor resultado. Parte de la mejora se debe a que `Titulo`
+también entra como atributo al modelo. Si el equipo no quiere agregar atributos, la alternativa es mediana por `Pclass`×`Sex` + indicador.
+Eliminar filas es lo peor: pierde 20 % de train, sobre todo de 3ª clase. Todo se ajusta solo con train (`src/rol_d.py`).
+
+**Outliers (Rol D).** Se detectaron con la regla IQR (Tukey) sobre train y se compararon: no tratar, winsorizar con IQR,
+winsorizar con percentiles 1–99, `log1p` y eliminar filas de train.
+
+- **Titanic — `Fare`:** límites IQR [−25.3, 63.2] (12 % de outliers, máximo 512.3); límites P1–P99 [0, 227.5].
+  Con P1–P99 la media de train pasa de 30.9 a 29.8 y la desviación estándar de 47.8 a 39.8.
+  Los boletos caros son reales (1ª clase) y el 74 % de esos pasajeros sobrevivió. El efecto en métricas es mínimo
+  (F1 0.743–0.750); se eligió **`log1p(Fare)`** por dar el mejor ROC-AUC/PR-AUC sin perder información.
+  `Parch` y `SibSp` no se tratan: en `Parch` Q1 = Q3 = 0 y la regla IQR marcaría como atípico a cualquiera con familia;
+  winsorizar todas las numéricas baja el F1 a 0.732 y eliminar filas a 0.717.
+- **Fraud:** 10 de 30 columnas tienen más del 5 % de outliers IQR, y entre ellos el fraude llega a 37 % (V11) frente a 0.17 % global:
+  **los outliers son la señal**. Eliminar filas deja 9 de 344 fraudes en train (PR-AUC 0.031). Se eligió **winsorizar P1–P99
+  todas las columnas** (p. ej. `Amount` a [0.12, 1015]; desviación estándar 253 → 159): recall 0.615 → 0.750,
+  F1 0.714 → 0.801 y PR-AUC 0.708 → 0.773, porque limita la influencia de valores extremos en la regresión logística sin
+  descartar ningún fraude. IQR es más agresivo y queda un poco abajo (PR-AUC 0.755).
+  El Rol B recomendaba winsorizar solo `Amount`; la prueba muestra que eso no cambia nada (PR-AUC 0.708) y que la mejora viene
+  de recortar las `V`. Con P1–P99 el fraude sigue en el extremo de cada variable, así que la señal se conserva.
 
 **Balanceo (Rol E).** Se compararon 5 estrategias con el mismo modelo, aplicando el remuestreo solo a train:
 sin balanceo, `class_weight='balanced'`, RandomOverSampler, RandomUnderSampler y SMOTE.
@@ -67,7 +101,13 @@ Gráficas: `figuras/e_metricas_estrategias.png`, `figuras/e_curvas_pr_fraud.png`
 
 ## 4. Recomendación final
 
-✏️ *(Integrar con las decisiones de D: "pipeline = imputación X + winsorización Y + balanceo Z")*
+- **Pipeline Titanic** = mediana de `Age` por título + indicador + `log1p(Fare)` + `class_weight='balanced'`:
+  precision 0.739, recall 0.825, F1 0.780, ROC-AUC 0.881 (85 de 103 sobrevivientes detectados, 30 falsos positivos).
+  Sin balanceo: precision 0.792, recall 0.777, F1 0.784.
+- **Pipeline Fraud** = winsorización P1–P99 (sin balanceo): precision 0.860, recall 0.750, F1 0.801, PR-AUC 0.773
+  (111 fraudes detectados, 18 falsas alarmas). Al agregar `class_weight='balanced'` el recall sube a 0.878 (130 fraudes)
+  pero las falsas alarmas pasan a 2,114 y la PR-AUC baja a 0.750.
+
 
 - **Titanic:** usar `class_weight='balanced'`. Mejora el recall sin crear datos artificiales; el desbalance es leve,
   así que la ganancia es moderada.
@@ -84,4 +124,7 @@ Gráficas: `figuras/e_metricas_estrategias.png`, `figuras/e_curvas_pr_fraud.png`
 - Un solo modelo (regresión logística, por regla del equipo); otros modelos podrían responder distinto al balanceo.
 - En Fraud las variables V1–V28 son componentes PCA anónimos, lo que impide interpretar qué rasgos indican fraude.
 - Titanic contiene variables sensibles (sexo, edad, clase): el modelo puede reproducir desigualdades históricas. ✏️ *(Rol B: completar con el análisis de sesgo)*
-- ✏️ *(Rol D: limitaciones de la imputación y la winsorización)*
+- La imputación de `Age` asume que pasajeros con el mismo título tienen edades parecidas; si el faltante fuera MNAR
+  (depende de la propia edad) ninguna imputación lo corrige. La mediana por grupo reduce la varianza real de `Age`, y la mejora de F1 mezcla el efecto de imputar con el de agregar `Titulo`.
+- Los límites de winsorización se calculan con un solo split de train; con otro split cambiarían un poco.
+- En Fraud no se puede saber si un valor extremo es un error o una transacción real, porque V1–V28 son anónimas.

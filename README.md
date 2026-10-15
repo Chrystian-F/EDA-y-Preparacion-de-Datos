@@ -84,5 +84,6 @@ Cada integrante declara aquí dónde utilizó herramientas de IA generativa:
 |---|---|---|
 | Chrystian | Claude | Estructura del repositorio y `src/utils.py` (revisado y probado por el equipo) |
 | Jorge | Claude | Estructura de `src/rol_d.py`, `notebooks/03_imputacion_outliers.ipynb` y redacción de las secciones de imputación y outliers del informe (revisado y ejecutado por Jorge) |
+| Ulises | Claude | Borrador de `notebooks/02_eda.ipynb` (código de las gráficas e interpretaciones) y de la presentación; las cifras salen de ejecutar el notebook |
 | Jesús | Claude | Borrador de `notebooks/01_profiling.ipynb` (funciones de profiling e interpretaciones) y de la ficha técnica (`docs/ficha_tecnica.md`); las cifras salen de ejecutar el notebook |
 | | | |

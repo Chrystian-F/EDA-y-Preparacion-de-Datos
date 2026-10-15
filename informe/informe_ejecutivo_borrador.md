@@ -44,13 +44,18 @@ Se eligió **mediana de `Age` por título del nombre + indicador `Age_faltante`*
 `Cabin` se excluye. El título distingue a los niños (`Master`) mejor que `Pclass`×`Sex`, conserva mejor la distribución de `Age`
 que la mediana global (que crea un pico artificial en 28 años) y da el mejor resultado. Parte de la mejora se debe a que `Titulo`
 también entra como atributo al modelo. Si el equipo no quiere agregar atributos, la alternativa es mediana por `Pclass`×`Sex` + indicador.
+Para la variable categórica `Embarked` se comparó la moda (`S`) contra la categoría "Desconocido": ambas dan métricas idénticas
+(F1 = 0.733) porque los 2 nulos están en train y test no tiene ninguno; con tan pocos faltantes la estrategia no importa y se
+eligió la moda.
 Eliminar filas es lo peor: pierde 20 % de train, sobre todo de 3ª clase. Todo se ajusta solo con train (`src/rol_d.py`).
 
 **Outliers (Rol D).** Se detectaron con la regla IQR (Tukey) sobre train y se compararon: no tratar, winsorizar con IQR,
 winsorizar con percentiles 1–99, `log1p` y eliminar filas de train.
 
 - **Titanic — `Fare`:** límites IQR [−25.3, 63.2] (12 % de outliers, máximo 512.3); límites P1–P99 [0, 227.5].
-  Con P1–P99 la media de train pasa de 30.9 a 29.8 y la desviación estándar de 47.8 a 39.8.
+  Antes/después en train (mediana 13.5 en los tres casos): original media 30.87, desv. 47.76, máx. 512.33; IQR media 22.98,
+  desv. 19.34, máx. 63.16 (77 tarifas recortadas, 12 %); P1–P99 media 29.78, desv. 39.80, máx. 227.52 (6 recortadas).
+  El límite inferior IQR (−25.26) se fijó en 0. Ver `figuras/d_winsorizacion_fare_antes_despues.png`.
   Los boletos caros son reales (1ª clase) y el 74 % de esos pasajeros sobrevivió. El efecto en métricas es mínimo
   (F1 0.743–0.750); se eligió **`log1p(Fare)`** por dar el mejor ROC-AUC/PR-AUC sin perder información.
   `Parch` y `SibSp` no se tratan: en `Parch` Q1 = Q3 = 0 y la regla IQR marcaría como atípico a cualquiera con familia;

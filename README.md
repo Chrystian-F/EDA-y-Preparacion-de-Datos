@@ -44,6 +44,7 @@ notebooks/       un notebook por sección
 src/utils.py     funciones comunes: cargar_datos, dividir, preprocesador_minimo, evaluar...
 resultados/      métricas de cada experimento (CSV)
 figuras/         gráficas exportadas (PNG)
+docs/            entregables en documento (ficha técnica, …)
 ```
 
 | Notebook | Responsable |
@@ -82,4 +83,5 @@ Cada integrante declara aquí dónde utilizó herramientas de IA generativa:
 | Integrante | Herramienta | Uso |
 |---|---|---|
 | Chrystian | Claude | Estructura del repositorio y `src/utils.py` (revisado y probado por el equipo) |
+| Jesús | Claude | Borrador de `notebooks/01_profiling.ipynb` (funciones de profiling e interpretaciones) y de la ficha técnica (`docs/ficha_tecnica.md`); las cifras salen de ejecutar el notebook |
 | | | |

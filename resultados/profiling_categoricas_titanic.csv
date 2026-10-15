@@ -1,0 +1,5 @@
+﻿columna,n_categorias,moda,frec_moda,%_moda,n_categorias_raras,ejemplos_raras
+Pclass,3,3,491,55.106621773288445,0,[]
+Sex,2,male,577,64.75869809203144,0,[]
+Embarked,3,S,644,72.44094488188976,0,[]
+Cabin,147,G6,4,1.9607843137254901,139,"['C123', 'D33', 'C52', 'B28', 'C83']"
